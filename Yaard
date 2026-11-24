@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REX Pilot</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+    margin: 20px;
+}
+
+h1 {
+    color: #003366;
+}
+
+.dashboard {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    width: 200px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.card h3 {
+    margin: 0;
+    color: #555;
+}
+
+.card p {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0078D4;
+}
+
+form {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+input, select, textarea {
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    padding: 8px;
+}
+
+button {
+    background-color: #0078D4;
+    color: white;
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #005A9E;
+}
+
+table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+table th {
+    background-color: #003366;
+    color: white;
+}
+
+table th, table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.en-cours {
+    color: orange;
+    font-weight: bold;
+}
+
+.cloture {
+    color: green;
+    font-weight: bold;
+}
+
+.critique {
+    background-color: #ffe4e4;
+}
+</style>
+
+</head>
+<body>
+
+<h1>REX PILOT - Gestion des Incidents Exploitation</h1>
+
+<div class="dashboard">
+    <div class="card">
+        <h3>Incidents</h3>
+        <p id="totalIncidents">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Actions ouvertes</h3>
+        <p id="actionsOuvertes">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Incidents critiques</h3>
+        <p id="incidentsCritiques">0</p>
+    </div>
+</div>
+
+<form id="incidentForm">
+
+    <label>Date</label>
+    <input type="date" id="date">
+
+    <label>Type d'incident</label>
+    <select id="type">
+        <option>Panne machine</option>
+        <option>Accident du travail</option>
+        <option>Qualité</option>
+        <option>Absentéisme</option>
+        <option>Organisation</option>
+    </select>
+
+    <label>Description</label>
+    <textarea id="description"></textarea>
+
+    <label>Responsable</label>
+    <input type="text" id="responsable">
+
+    <label>Échéance</label>
+    <input type="date" id="echeance">
+
+    <label>Criticité</label>
+    <select id="criticite">
+        <option>Faible</option>
+        <option>Moyenne</option>
+        <option>Critique</option>
+    </select>
+
+    <button type="submit">
+        Ajouter l'incident
+    </button>
+
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Responsable</th>
+            <th>Echéance</th>
+            <th>Criticité</th>
+            <th>Statut</th>
+        </tr>
+    </thead>
+
+    <tbody id="incidentTable"></tbody>
+
+</table>
+
+<script>
+
+let incidents = [];
+
+document.getElementById("incidentForm")
+.addEventListener("submit", function(event){
+
+event.preventDefault();
+
+const incident = {
+date: document.getElementById("date").value,
+type: document.getElementById("type").value,
+description: document.getElementById("description").value,
+responsable: document.getElementById("responsable").value,
+echeance: document.getElementById("echeance").value,
+criticite: document.getElementById("criticite").value,
+statut: "En cours"
+};
+
+incidents.push(incident);
+
+miseAJourTableau();
+this.reset();
+
+});
+
+function miseAJourTableau(){
+
+let table = document.getElementById("incidentTable");
+table.innerHTML = "";
+
+let nbCritiques = 0;
+
+incidents.forEach((i,index)=>{
+
+if(i.criticite==="Critique"){
+nbCritiques++;
+}
+
+let ligne = `
+<tr class="${i.criticite==='Critique' ? 'critique' : ''}">
+<td>${i.date}</td>
+<td>${i.type}</td>
+<td>${i.description}</td>
+<td>${i.responsable}</td>
+<td>${i.echeance}</td>
+<td>${i.criticite}</td>
+<td>
+<button onclick="cloturer(${index})">
+${i.statut}
+</button>
+</td>
+</tr>
+`;
+
+table.innerHTML += ligne;
+
+});
+
+document.getElementById("totalIncidents").innerText = incidents.length;
+
+document.getElementById("actionsOuvertes").innerText =
+incidents.filter(x=>x.statut==="En cours").length;
+
+document.getElementById("incidentsCritiques").innerText =
+nbCritiques;
+
+}
+
+function cloturer(index){
+
+incidents[index].statut="Clôturé";
+
+miseAJourTableau();
+
+}
+
+</script>
+
+</body>
+</html>
